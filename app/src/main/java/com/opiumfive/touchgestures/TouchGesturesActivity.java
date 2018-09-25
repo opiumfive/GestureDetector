@@ -46,6 +46,16 @@ public class TouchGesturesActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onTopSwipeStep() {
+            addGestureText("onTopSwipeStep");
+        }
+
+        @Override
+        public void onBottomSwipeStep() {
+            addGestureText("onBottomSwipeStep");
+        }
+
+        @Override
         public void onThreeFingersTap() {
             addGestureText("onThreeFingersTap");
         }

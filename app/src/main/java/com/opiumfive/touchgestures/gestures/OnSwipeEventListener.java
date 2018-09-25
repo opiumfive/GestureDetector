@@ -9,7 +9,9 @@ public class OnSwipeEventListener extends GestureDetector.SimpleOnGestureListene
     private static final float NEXT_ITEM_THRESHOLD_DEFAULT = 100.0f;
 
     private float mScrollStartX = 0f;
-    private int mCurrentItemNumber = 0;
+    private float mScrollStartY = 0f;
+    private int mCurrentItemXNumber = 0;
+    private int mCurrentItemYNumber = 0;
     private float mNextItemThreshold = NEXT_ITEM_THRESHOLD_DEFAULT;
 
     @NonNull
@@ -31,7 +33,9 @@ public class OnSwipeEventListener extends GestureDetector.SimpleOnGestureListene
     @Override
     public boolean onDown(MotionEvent e) {
         mScrollStartX = e.getX();
-        mCurrentItemNumber = 0;
+        mScrollStartY = e.getY();
+        mCurrentItemXNumber = 0;
+        mCurrentItemYNumber = 0;
         return super.onDown(e);
     }
 
@@ -40,13 +44,23 @@ public class OnSwipeEventListener extends GestureDetector.SimpleOnGestureListene
         if (Math.abs(distanceX) > Math.abs(distanceY) && e2.getPointerCount() == 1) {
             int diffX = (int) Math.floor((e2.getX() - mScrollStartX) / mNextItemThreshold);
 
-            if (diffX > mCurrentItemNumber) {
+            if (diffX > mCurrentItemXNumber) {
                 mGestureListener.onRightSwipeStep();
-            } else if (diffX < mCurrentItemNumber) {
+            } else if (diffX < mCurrentItemXNumber) {
                 mGestureListener.onLeftSwipeStep();
             }
 
-            mCurrentItemNumber = diffX;
+            mCurrentItemXNumber = diffX;
+        } else if (Math.abs(distanceX) < Math.abs(distanceY) && e2.getPointerCount() == 1) {
+            int diffY = (int) Math.floor((e2.getY() - mScrollStartY) / mNextItemThreshold);
+
+            if (diffY > mCurrentItemYNumber) {
+                mGestureListener.onBottomSwipeStep();
+            } else if (diffY < mCurrentItemYNumber) {
+                mGestureListener.onTopSwipeStep();
+            }
+
+            mCurrentItemYNumber = diffY;
         }
         return super.onScroll(e1, e2, distanceX, distanceY);
     }

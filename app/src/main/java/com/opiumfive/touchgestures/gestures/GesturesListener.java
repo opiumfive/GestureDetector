@@ -7,6 +7,8 @@ public interface GesturesListener {
     void onSwipeDown();
     void onRightSwipeStep();
     void onLeftSwipeStep();
+    void onTopSwipeStep();
+    void onBottomSwipeStep();
     void onThreeFingersTap();
     void onRotation(float angleDegrees);
     void onScale(float scaleFactor);

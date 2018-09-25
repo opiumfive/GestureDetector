@@ -8,7 +8,9 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
 import static android.view.MotionEvent.ACTION_DOWN;
-import static android.view.MotionEvent.ACTION_POINTER_3_DOWN;
+import static android.view.MotionEvent.ACTION_MOVE;
+import static android.view.MotionEvent.ACTION_POINTER_DOWN;
+import static android.view.MotionEvent.ACTION_POINTER_UP;
 
 public class GestureDetector {
 
@@ -26,11 +28,13 @@ public class GestureDetector {
     private long mDownTimeMillis;
     private float mCurrentScaleFactor = 1f;
     private float mDebouncedScaleFactor = 1f;
+    private boolean mIsStartedTrackingThreeTap = false;
 
     public GestureDetector(@NonNull Context context, @NonNull GesturesListener listener) {
         mGesturesListener = listener;
         mOnSwipeEventListener = new OnSwipeEventListener(mGesturesListener);
         mSwipeDetector = new GestureDetectorCompat(context, mOnSwipeEventListener);
+        mSwipeDetector.setIsLongpressEnabled(false);
         mRotationDetector = new RotationGestureDetector(mGesturesListener, mRotationDebounceDelta);
         mScaleDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
@@ -73,11 +77,34 @@ public class GestureDetector {
     }
 
     private void onTouchEvent(MotionEvent event) {
-        if (event.getAction() == ACTION_POINTER_3_DOWN && event.getPointerCount() >= 3) {
-            mGesturesListener.onThreeFingersTap();
+        if (!trackOtherCustomEvents(event)) {
+            if (!mSwipeDetector.onTouchEvent(event)) {
+                mScaleDetector.onTouchEvent(event);
+                mRotationDetector.onTouchEvent(event);
+            }
         }
-        mSwipeDetector.onTouchEvent(event);
-        mScaleDetector.onTouchEvent(event);
-        mRotationDetector.onTouchEvent(event);
+    }
+
+    private boolean trackOtherCustomEvents(MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case ACTION_POINTER_DOWN:
+                if (event.getPointerCount() >= 3) {
+                    mIsStartedTrackingThreeTap = true;
+                }
+                break;
+            case ACTION_MOVE:
+                mIsStartedTrackingThreeTap = false;
+                break;
+            case ACTION_POINTER_UP:
+                if (mIsStartedTrackingThreeTap && event.getPointerCount() >= 3) {
+                    mGesturesListener.onThreeFingersTap();
+                }
+                mIsStartedTrackingThreeTap = false;
+                break;
+        }
+
+        boolean isTrackingOtherEvents = mIsStartedTrackingThreeTap; // add more here
+
+        return isTrackingOtherEvents;
     }
 }
